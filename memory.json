@@ -1,0 +1,16 @@
+[
+  "User: remember I need to study AI agents",
+  "Agent: Note saved!",
+  "User: what do you remember?",
+  "Agent: Note saved!",
+  "User: what i have to learn ?",
+  "Agent: You need to learn about AI agents, including their architecture, capabilities, limitations, and applications.",
+  "User: what do you remember ?",
+  "Agent: I remember that you asked me for information on AI agents and I provided it.",
+  "User: ok now i want you to remember my data. i am satya studing ai agent and ai engineering ",
+  "Agent: Note saved!",
+  "User: ok what is my name ",
+  "Agent: Your name is Satya.",
+  "User: and what i am studying now ?",
+  "Agent: You are studying AI agents and AI Engineering."
+]

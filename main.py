@@ -1,6 +1,6 @@
 import requests
 import json
-from tools import calculator , save_note 
+from tools import calculator , save_note , web_search
 from memory import load_memory , add_memory
 
 Ollma_url = "http://localhost:11434/api/generate"
@@ -11,6 +11,7 @@ You are an AI assistant with access to tools.
 Available tools:
 1. calculator(expression)
 2. save_note(note)
+3. web_search(query)
 
 STRICT RULES:
 - You MUST ALWAYS return a valid JSON object.
@@ -22,13 +23,14 @@ STRICT RULES:
 - The JSON must follow EXACTLY this schema:
 
 {
-  "action": "respond OR calculator OR save_note",
+  "action": "respond OR calculator OR save_note" OR web_search,
   "input": "string"
 }
 
 Action rules:
 - Use "calculator" ONLY for mathematical expressions.
 - Use "save_note" ONLY when the user asks to remember something.
+- Use "web_search" when you need current or unknown information.
 - Use "respond" for all other cases.
 
 Input rules:
@@ -113,6 +115,8 @@ def run_agent(user_input):
         result = calculator(inp)
     elif action == "save_note":
         result = save_note(inp)
+    elif action == "web_search":
+        result = web_search(inp)
     elif action == "respond":
         result = inp
     else:

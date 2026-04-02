@@ -28,3 +28,4 @@ def add_memory(entry):
     memory = load_memory()
     memory.append(entry)
     save_memory(memory)
+

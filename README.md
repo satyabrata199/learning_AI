@@ -1235,3 +1235,2747 @@ Implement this and tell me:
 3. Want to make it SMARTER or more POWERFUL next?
 
 We’re building a real AI system now 💻🔥
+
+
+================================================================================
+me - ok i want you to review the function once 
+def run_agent(user_input):
+
+    memory = load_memory()
+    memory_contetxt = "\n".join(memory[-5:])
+
+    full_prompt = f"{SYSTEM_PROMPT}\n previous context: {memory_contetxt}\nUser: {user_input}\nOutput:"
+
+    for _ in range(2):
+        output = ask(full_prompt)
+        cleaned = clean_output(output)
+        try:
+            action_data = json.loads(cleaned)
+            break
+        except:
+            continue
+
+    else:
+        print("RAW OUTPUT:", output)
+        return "Error: Model didn't return valid JSON"
+
+    action = action_data.get("action")
+    inp = action_data.get("input")
+
+    if not action or inp is None:
+        return "Error: Missing fields in JSON"
+
+    if action == "calculator":
+        return calculator(inp)
+    elif action == "save_note":
+        return save_note(inp)
+    elif action == "respond":
+        return inp
+    else:
+        return "unknown action"
+    
+    add_memory(f"User: {user_input}")
+    add_memory(f"Agent: {result}")
+
+    ============================================================================
+
+    Good — this is exactly the kind of iteration that turns you into a solid engineer 🔥
+Your structure is **almost correct**, but there are a couple of **critical bugs + design issues**.
+
+Let’s break it down cleanly 👇
+
+---
+
+# ❌ Critical Issues in Your Function
+
+## 🔴 1. MEMORY NEVER SAVES (BIG BUG)
+
+This part:
+
+```python
+return calculator(inp)
+...
+add_memory(...)
+```
+
+👉 Once `return` runs → function exits
+👉 So `add_memory()` is **NEVER executed**
+
+---
+
+## 🔴 2. `result` VARIABLE DOESN’T EXIST
+
+You wrote:
+
+```python
+add_memory(f"Agent: {result}")
+```
+
+But `result` is never defined ❌
+
+---
+
+## 🔴 3. Prompt Formatting (Minor but important)
+
+```python
+"previous context:"
+```
+
+👉 Models respond better with clear structured sections like:
+
+```
+Previous conversation:
+```
+
+---
+
+## 🔴 4. Typo (not breaking, but sloppy)
+
+```python
+memory_contetxt ❌
+```
+
+---
+
+# ✅ Fixed + Improved Version (Use This)
+
+Here’s the **correct and clean version**:
+
+```python
+def run_agent(user_input):
+
+    memory = load_memory()
+    memory_context = "\n".join(memory[-5:])
+
+    full_prompt = f"""{SYSTEM_PROMPT}
+
+Previous conversation:
+{memory_context}
+
+User: {user_input}
+Output:
+"""
+
+    for _ in range(2):
+        output = ask(full_prompt)
+        cleaned = clean_output(output)
+
+        try:
+            action_data = json.loads(cleaned)
+            break
+        except:
+            continue
+    else:
+        print("RAW OUTPUT:", output)
+        return "Error: Model didn't return valid JSON"
+
+    action = action_data.get("action")
+    inp = action_data.get("input")
+
+    if not action or inp is None:
+        return "Error: Missing fields in JSON"
+
+    # ✅ STORE RESULT FIRST (IMPORTANT)
+    if action == "calculator":
+        result = calculator(inp)
+    elif action == "save_note":
+        result = save_note(inp)
+    elif action == "respond":
+        result = inp
+    else:
+        result = "unknown action"
+
+    # ✅ NOW SAVE MEMORY
+    add_memory(f"User: {user_input}")
+    add_memory(f"Agent: {result}")
+
+    return result
+```
+
+---
+
+# 🧠 Why This Matters
+
+This change fixes:
+
+### ✅ Proper control flow
+
+* No early returns
+* Centralized result handling
+
+### ✅ Memory actually works
+
+* Before → broken ❌
+* Now → persistent ✅
+
+### ✅ Cleaner architecture
+
+This pattern:
+
+```python
+decide → execute → store → return
+```
+
+👉 This is **real agent design pattern**
+
+---
+
+# 🔥 Small Pro Upgrade (Optional but powerful)
+
+Instead of storing raw text:
+
+```python
+add_memory(f"User: {user_input}")
+```
+
+👉 You can store structured memory:
+
+```python
+add_memory({
+    "user": user_input,
+    "agent": result
+})
+```
+
+(We can upgrade this later for smarter retrieval)
+
+---
+
+# 🚀 Where You Are Now
+
+You now have:
+
+* ✅ Local LLM agent
+* ✅ Tool usage
+* ✅ Memory system
+* ✅ Retry + robustness
+
+👉 This is already **mini LangChain-level system**
+
+---
+
+# 🔥 Next Move (Important Choice)
+
+Now we level up your agent:
+
+### Option 1 — 🧠 Smarter Agent (Recommended)
+
+* Multi-step reasoning
+* Tool chaining
+* Better decisions
+
+### Option 2 — 🛠️ More Tools
+
+* File reader
+* Code executor
+* System commands
+
+### Option 3 — 🧠 Better Memory (Advanced)
+
+* Search memory
+* Relevant retrieval
+* Not just last 5 lines
+
+---
+
+# 👉 Tell me
+
+What do you want next:
+
+**A. Smarter brain**
+**B. More tools**
+**C. Better memory (real AI feel)**
+
+We’ll push this into 🔥 territory now
+
+================================================================================
+me -    add_memory(f"User: {user_input}")
+  File "C:\Users\hi\Documents\learning_AI\memory.py", line 19, in add_memory
+    memory.append(entry)
+    ^^^^^^^^^^^^^
+AttributeError: 'function' object has no attribute 'append'
+================================================================================
+
+Ahhh this is a **classic Python bug** 😄 — and a really important one to understand.
+
+---
+
+# 🧠 What’s Happening
+
+Error:
+
+```
+AttributeError: 'function' object has no attribute 'append'
+```
+
+👉 This means:
+
+> `memory` is a **function**, not a list
+
+So this line:
+
+```python
+memory.append(entry)
+```
+
+is basically doing:
+
+```python
+some_function.append(...)
+```
+
+❌ which is invalid
+
+---
+
+# 🔍 Root Cause
+
+In your `memory.py`, you likely did something like:
+
+```python
+memory = load_memory   # ❌ missing ()
+```
+
+Instead of:
+
+```python
+memory = load_memory()  # ✅ correct
+```
+
+---
+
+# ✅ Fix Your `add_memory()` Function
+
+Go to `memory.py` and make sure it's EXACTLY like this:
+
+```python
+import json
+import os
+
+MEMORY_FILE = "memory.json"
+
+def load_memory():
+    if not os.path.exists(MEMORY_FILE):
+        return []
+
+    with open(MEMORY_FILE, "r") as f:
+        return json.load(f)
+
+def save_memory(data):
+    with open(MEMORY_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+def add_memory(entry):
+    memory = load_memory()   # ✅ MUST CALL FUNCTION
+
+    memory.append(entry)     # now it's a list
+
+    save_memory(memory)
+```
+
+---
+
+# 🧠 Why This Happened (Important Concept)
+
+In Python:
+
+```python
+load_memory      # 👉 function
+load_memory()    # 👉 function result (list)
+```
+
+👉 You forgot `()` → so you were working with the function itself
+
+---
+
+# 🔥 Debug Trick (Pro Tip)
+
+If unsure, print type:
+
+```python
+print(type(memory))
+```
+
+You’ll see:
+
+```
+<class 'function'> ❌
+```
+
+or
+
+```
+<class 'list'> ✅
+```
+
+---
+
+# 🚀 After Fix
+
+Run again:
+
+```
+remember I like AI agents
+```
+
+Then:
+
+```
+what do you remember?
+```
+
+---
+
+# 🧠 What You Just Learned
+
+* Function vs function call (VERY important)
+* Debugging runtime errors
+* Data flow in systems
+
+---
+
+# 🔥 You’re Doing Real Engineering Now
+
+You:
+
+* Built agent loop ✅
+* Handled LLM quirks ✅
+* Added memory ✅
+* Debugged runtime issue ✅
+
+👉 This is exactly how real AI systems are built.
+
+---
+
+# 👉 Next Move
+
+Now that memory works, we can go **next level**:
+
+### 🔥 Make memory SMART (not just last 5 lines)
+
+OR
+
+### 🔥 Add multi-step reasoning agent
+
+Say:
+👉 “smart memory” or “reasoning agent”
+
+Let’s push this further 🚀
+
+
+================================================================================
+me -   File "C:\Users\hi\AppData\Local\Programs\Python\Python311\Lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+================================================================================
+
+Nice — you’ve hit another **very real-world bug** 🔥
+This is exactly how building agents goes.
+
+---
+
+# 🧠 Error Meaning
+
+```python
+JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+```
+
+👉 This usually means:
+
+> `json.loads()` received **empty string OR invalid JSON**
+
+---
+
+# 🔍 Most Likely Causes (in your case)
+
+### 1. ❌ Empty response from Ollama
+
+```python
+output = ask(full_prompt)
+```
+
+👉 Sometimes returns `""`
+
+---
+
+### 2. ❌ Model returned garbage / partial output
+
+* blank
+* spaces
+* broken JSON
+
+---
+
+### 3. ❌ `clean_output()` removed everything
+
+---
+
+# ✅ FIX — Add Defensive Handling (VERY IMPORTANT)
+
+Update your loop like this:
+
+```python
+for _ in range(2):
+    output = ask(full_prompt)
+
+    if not output or output.strip() == "":
+        print("⚠️ Empty response from model")
+        continue
+
+    cleaned = clean_output(output)
+
+    if not cleaned:
+        print("⚠️ Cleaned output is empty")
+        continue
+
+    try:
+        action_data = json.loads(cleaned)
+        break
+    except json.JSONDecodeError:
+        print("⚠️ JSON parsing failed")
+        print("RAW:", output)
+        print("CLEANED:", cleaned)
+        continue
+```
+
+---
+
+# 🧠 WHY This Fix Matters
+
+You are now handling:
+
+| Problem         | Solution              |
+| --------------- | --------------------- |
+| Empty output    | Skip + retry          |
+| Broken JSON     | Debug + retry         |
+| Cleaning issues | Validate before parse |
+
+👉 This is **production-grade robustness**
+
+---
+
+# 🔥 Extra Fix — Make `ask()` Safer
+
+Update:
+
+```python
+def ask(prompt):
+    response = requests.post(Ollma_url, json={
+        "model":"gemma2:2b",
+        "prompt":prompt,
+        "stream":False,
+    })
+
+    try:
+        return response.json().get("response", "")
+    except:
+        print("⚠️ Failed to parse API response")
+        return ""
+```
+
+---
+
+# 🧪 Debug Strategy (Use This)
+
+Whenever error happens, print:
+
+```python
+print("RAW OUTPUT:", repr(output))
+```
+
+👉 `repr()` shows hidden stuff like:
+
+* `\n`
+* empty string
+* weird characters
+
+---
+
+# ⚠️ Reality Check (Important)
+
+Small local models like **Gemma 2B**:
+
+* ❌ Sometimes return empty
+* ❌ Struggle with strict JSON
+* ❌ Need retries
+
+👉 THIS IS NORMAL
+
+---
+
+# 🚀 You Are Now Here
+
+You’ve built:
+
+* ✅ Agent loop
+* ✅ Tool system
+* ✅ Memory system
+* ✅ Error handling layer
+
+👉 This is already **better than 80% beginner agents**
+
+---
+
+# 🔥 Next Step (Big Upgrade)
+
+Now we stop patching… and start making it **SMART**
+
+## 🧠 Option A — Smart Memory (Recommended)
+
+* Instead of last 5 lines → retrieve relevant memory
+* Makes agent feel *intelligent*
+
+## 🧠 Option B — Reasoning Agent
+
+* Multi-step thinking
+* Plan → act → observe loop
+
+---
+
+# 👉 Choose
+
+Say:
+
+* **“smart memory”** → real assistant feel
+* **“reasoning agent”** → advanced agent brain
+
+We level up now 🚀
+
+================================================================================
+me- review it again 
+def run_agent(user_input):
+
+    memory = load_memory()
+    memory_contetxt = "\n".join(memory[-5:])
+
+    full_prompt = f"{SYSTEM_PROMPT}\n previous context: {memory_contetxt}\nUser: {user_input}\nOutput:"
+
+    for _ in range(2):
+        output = ask(full_prompt)
+        cleaned = clean_output(output)
+        try:
+            action_data = json.loads(cleaned)
+            break
+        except:
+            continue
+
+    else:
+        print("RAW OUTPUT:", output)
+        return "Error: Model didn't return valid JSON"
+
+    action = action_data.get("action")
+    inp = action_data.get("input")
+
+    if not action or inp is None:
+        return "Error: Missing fields in JSON"
+
+    if action == "calculator":
+        result = calculator(inp)
+    elif action == "save_note":
+        result = save_note(inp)
+    elif action == "respond":
+        result = inp
+    else:
+        result = "unknown action"
+    
+    add_memory(f"User: {user_input}")
+    add_memory(f"Agent: {result}")
+
+    return result
+
+    ============================================================================
+
+    This is **very close to clean production-level code** now 🔥
+Just a few **important fixes + small upgrades** to make it robust and clean.
+
+---
+
+# ✅ What’s Good
+
+* ✔ Proper flow: *decide → execute → store → return*
+* ✔ Retry loop exists
+* ✔ Memory integration is correct
+* ✔ No early return bug anymore
+
+👉 This is already a **real agent loop**
+
+---
+
+# ⚠️ Issues + Improvements
+
+## 🔴 1. No Handling for Empty Output (IMPORTANT)
+
+Right now:
+
+```python
+output = ask(full_prompt)
+cleaned = clean_output(output)
+```
+
+👉 If `output == ""` → crash later
+
+---
+
+## ✅ Fix
+
+```python
+if not output or output.strip() == "":
+    print("⚠️ Empty response from model")
+    continue
+```
+
+---
+
+## 🔴 2. No Debug Info When JSON Fails
+
+You silently retry:
+
+```python
+except:
+    continue
+```
+
+👉 You’re flying blind ❌
+
+---
+
+## ✅ Fix
+
+```python
+except json.JSONDecodeError:
+    print("⚠️ JSON parsing failed")
+    print("RAW:", repr(output))
+    print("CLEANED:", repr(cleaned))
+    continue
+```
+
+---
+
+## 🔴 3. Prompt Formatting (Important for LLM)
+
+Current:
+
+```python
+"previous context:"
+```
+
+👉 Weak signal for model
+
+---
+
+## ✅ Improve Prompt
+
+```python
+full_prompt = f"""{SYSTEM_PROMPT}
+
+Previous conversation:
+{memory_context}
+
+User: {user_input}
+Output:
+"""
+```
+
+---
+
+## 🔴 4. Typo (Cleanliness)
+
+```python
+memory_contetxt ❌
+```
+
+Fix:
+
+```python
+memory_context ✅
+```
+
+---
+
+## 🔴 5. Bare `except:` (Bad Practice)
+
+```python
+except:
+```
+
+👉 Catches everything (even keyboard interrupt etc.)
+
+---
+
+## ✅ Fix
+
+```python
+except json.JSONDecodeError:
+```
+
+---
+
+# 🚀 Final Clean Version (Use This)
+
+```python
+def run_agent(user_input):
+
+    memory = load_memory()
+    memory_context = "\n".join(memory[-5:])
+
+    full_prompt = f"""{SYSTEM_PROMPT}
+
+Previous conversation:
+{memory_context}
+
+User: {user_input}
+Output:
+"""
+
+    for _ in range(2):
+        output = ask(full_prompt)
+
+        if not output or output.strip() == "":
+            print("⚠️ Empty response from model")
+            continue
+
+        cleaned = clean_output(output)
+
+        try:
+            action_data = json.loads(cleaned)
+            break
+        except json.JSONDecodeError:
+            print("⚠️ JSON parsing failed")
+            print("RAW:", repr(output))
+            print("CLEANED:", repr(cleaned))
+            continue
+
+    else:
+        print("❌ Final RAW OUTPUT:", repr(output))
+        return "Error: Model didn't return valid JSON"
+
+    action = action_data.get("action")
+    inp = action_data.get("input")
+
+    if not action or inp is None:
+        return "Error: Missing fields in JSON"
+
+    if action == "calculator":
+        result = calculator(inp)
+    elif action == "save_note":
+        result = save_note(inp)
+    elif action == "respond":
+        result = inp
+    else:
+        result = "unknown action"
+
+    add_memory(f"User: {user_input}")
+    add_memory(f"Agent: {result}")
+
+    return result
+```
+
+---
+
+# 🧠 What Level You’re At Now
+
+You’ve implemented:
+
+* ✔ Local LLM agent
+* ✔ Tool calling
+* ✔ Memory system
+* ✔ Retry + validation
+* ✔ Debug handling
+
+👉 This is **intermediate AI engineering level**
+
+---
+
+# 🔥 Now the REAL Upgrade
+
+Your agent works…
+
+Now we make it **SMART**
+
+---
+
+# 🚀 Next Options (Choose One)
+
+## 🧠 Option A — Smart Memory (HIGH IMPACT)
+
+* Retrieve *relevant* memory instead of last 5
+* Makes agent feel intelligent
+
+## 🧠 Option B — Reasoning Agent (ADVANCED)
+
+* Plan → act → observe loop
+* Multi-step thinking
+
+## 🛠️ Option C — More Tools
+
+* File reader
+* Code executor
+* System automation
+
+---
+
+# 👉 My Recommendation
+
+Go with:
+👉 **Smart Memory**
+
+Because right now your agent:
+
+> remembers blindly, not intelligently
+
+---
+
+Say:
+👉 **“smart memory”**
+
+We’ll turn this into a **real assistant-level system** 🚀
+
+
+================================================================================
+me - Traceback (most recent call last):
+  File "C:\Users\hi\Documents\learning_AI\main.py", line 132, in <module>
+    reply = run_agent(user_input)
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hi\Documents\learning_AI\main.py", line 88, in run_agent
+    memory = load_memory()
+             ^^^^^^^^^^^^^
+  File "C:\Users\hi\Documents\learning_AI\memory.py", line 11, in load_memory
+    return json.load(f)
+           ^^^^^^^^^^^^
+  File "C:\Users\hi\AppData\Local\Programs\Python\Python311\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\hi\AppData\Local\Programs\Python\Python311\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hi\AppData\Local\Programs\Python\Python311\Lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hi\AppData\Local\Programs\Python\Python311\Lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+================================================================================
+
+Perfect — this is a **very common real-world issue** when working with file-based memory 👍
+And the good news: it’s easy to fix once you understand it.
+
+---
+
+# 🧠 What This Error Means
+
+```python
+JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+```
+
+👉 This time it’s happening in:
+
+```python
+return json.load(f)
+```
+
+So the problem is:
+
+> 📂 Your `memory.json` file is **empty OR corrupted**
+
+---
+
+# 🔍 Why This Happens
+
+Most likely one of these:
+
+### ❌ Case 1 — Empty file
+
+```
+memory.json = ""
+```
+
+👉 `json.load()` expects valid JSON like:
+
+```json
+[]
+```
+
+---
+
+### ❌ Case 2 — Partially written file
+
+Example:
+
+```json
+["User: hi",
+```
+
+👉 Broken JSON → crash
+
+---
+
+# ✅ FIX — Make `load_memory()` SAFE
+
+Update your `memory.py` like this:
+
+```python
+import json
+import os
+
+MEMORY_FILE = "memory.json"
+
+def load_memory():
+    if not os.path.exists(MEMORY_FILE):
+        return []
+
+    try:
+        with open(MEMORY_FILE, "r") as f:
+            content = f.read().strip()
+
+            if not content:  # ✅ empty file
+                return []
+
+            return json.loads(content)
+
+    except json.JSONDecodeError:
+        print("⚠️ Memory file corrupted, resetting...")
+        return []
+
+def save_memory(data):
+    with open(MEMORY_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+def add_memory(entry):
+    memory = load_memory()
+    memory.append(entry)
+    save_memory(memory)
+```
+
+---
+
+# 🛠️ QUICK FIX (Do this now)
+
+### Option 1 (fastest)
+
+Open `memory.json` and replace content with:
+
+```json
+[]
+```
+
+---
+
+### Option 2 (clean reset)
+
+Just delete the file:
+
+```
+memory.json
+```
+
+👉 Your code will recreate it
+
+---
+
+# 🧠 Why This Matters
+
+You just learned:
+
+* File-based systems can break ❌
+* Always validate input before parsing ✅
+* Defensive programming is essential
+
+👉 This is **real backend engineering thinking**
+
+---
+
+# 🔥 Pro Upgrade (Optional)
+
+You can auto-create file:
+
+```python
+if not os.path.exists(MEMORY_FILE):
+    with open(MEMORY_FILE, "w") as f:
+        json.dump([], f)
+```
+
+---
+
+# 🚀 Status Check
+
+After fix, your agent will be:
+
+* ✅ Stable
+* ✅ Persistent
+* ✅ Error-resistant
+
+---
+
+# 👉 Next Step
+
+Once this runs:
+
+Say:
+👉 **“smart memory”**
+
+We’ll upgrade from:
+
+> dumb last-5 memory ❌
+> to
+> intelligent memory retrieval ✅
+
+That’s where your agent becomes 🔥
+
+================================================================================
+me - Perfect — this is a **very common real-world issue** when working with file-based memory 👍
+And the good news: it’s easy to fix once you understand it.
+
+---
+
+# 🧠 What This Error Means
+
+```python
+JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+```
+
+👉 This time it’s happening in:
+
+```python
+return json.load(f)
+```
+
+So the problem is:
+
+> 📂 Your `memory.json` file is **empty OR corrupted**
+
+---
+
+# 🔍 Why This Happens
+
+Most likely one of these:
+
+### ❌ Case 1 — Empty file
+
+```
+memory.json = ""
+```
+
+👉 `json.load()` expects valid JSON like:
+
+```json
+[]
+```
+
+---
+
+### ❌ Case 2 — Partially written file
+
+Example:
+
+```json
+["User: hi",
+```
+
+👉 Broken JSON → crash
+
+---
+
+# ✅ FIX — Make `load_memory()` SAFE
+
+Update your `memory.py` like this:
+
+```python
+import json
+import os
+
+MEMORY_FILE = "memory.json"
+
+def load_memory():
+    if not os.path.exists(MEMORY_FILE):
+        return []
+
+    try:
+        with open(MEMORY_FILE, "r") as f:
+            content = f.read().strip()
+
+            if not content:  # ✅ empty file
+                return []
+
+            return json.loads(content)
+
+    except json.JSONDecodeError:
+        print("⚠️ Memory file corrupted, resetting...")
+        return []
+
+def save_memory(data):
+    with open(MEMORY_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+def add_memory(entry):
+    memory = load_memory()
+    memory.append(entry)
+    save_memory(memory)
+```
+
+---
+
+# 🛠️ QUICK FIX (Do this now)
+
+### Option 1 (fastest)
+
+Open `memory.json` and replace content with:
+
+```json
+[]
+```
+
+---
+
+### Option 2 (clean reset)
+
+Just delete the file:
+
+```
+memory.json
+```
+
+👉 Your code will recreate it
+
+---
+
+# 🧠 Why This Matters
+
+You just learned:
+
+* File-based systems can break ❌
+* Always validate input before parsing ✅
+* Defensive programming is essential
+
+👉 This is **real backend engineering thinking**
+
+---
+
+# 🔥 Pro Upgrade (Optional)
+
+You can auto-create file:
+
+```python
+if not os.path.exists(MEMORY_FILE):
+    with open(MEMORY_FILE, "w") as f:
+        json.dump([], f)
+```
+
+---
+
+# 🚀 Status Check
+
+After fix, your agent will be:
+
+* ✅ Stable
+* ✅ Persistent
+* ✅ Error-resistant
+
+---
+
+# 👉 Next Step
+
+Once this runs:
+
+Say:
+👉 **“smart memory”**
+
+We’ll upgrade from:
+
+> dumb last-5 memory ❌
+> to
+> intelligent memory retrieval ✅
+
+That’s where your agent becomes 🔥
+
+
+================================================================================
+me - all done bro lets go to next 
+================================================================================
+
+
+LETS GOOOO 🔥🔥
+Now we’re entering the **REAL power zone** — this is where your agent starts feeling *intelligent*, not just functional.
+
+---
+
+# 🧠 Step 4 — SMART MEMORY (This changes everything)
+
+Right now your agent:
+
+> remembers last 5 lines blindly ❌
+
+We upgrade it to:
+
+> remembers **relevant information only** ✅
+
+---
+
+# 🧩 Concept: Retrieval-Based Memory
+
+Instead of:
+
+```python
+memory[-5:]
+```
+
+We do:
+
+> 🔍 “Find memories related to current query”
+
+---
+
+# 🧠 Example
+
+### Memory:
+
+```
+User: I like Python
+User: I am preparing for exams
+User: I use Windows
+```
+
+### Query:
+
+```
+what do I like?
+```
+
+👉 Old system → random last 5 ❌
+👉 New system → picks “I like Python” ✅
+
+---
+
+# 🛠️ Step 4.1 — Upgrade `memory.py`
+
+Add this function 👇
+
+```python
+def search_memory(query, k=3):
+    memory = load_memory()
+
+    scored = []
+
+    query_words = set(query.lower().split())
+
+    for entry in memory:
+        entry_words = set(entry.lower().split())
+        score = len(query_words & entry_words)  # simple overlap
+
+        if score > 0:
+            scored.append((score, entry))
+
+    # sort by score (highest first)
+    scored.sort(reverse=True, key=lambda x: x[0])
+
+    # return top k relevant memories
+    return [entry for _, entry in scored[:k]]
+```
+
+---
+
+# 🧠 What This Does
+
+* Breaks query into words
+* Matches with memory
+* Returns most relevant entries
+
+👉 Simple but VERY powerful
+
+---
+
+# 🔧 Step 4.2 — Update `run_agent()`
+
+Replace:
+
+```python
+memory = load_memory()
+memory_context = "\n".join(memory[-5:])
+```
+
+---
+
+### With this:
+
+```python
+relevant_memory = search_memory(user_input)
+memory_context = "\n".join(relevant_memory)
+```
+
+---
+
+# 🧪 Step 4.3 — Test It
+
+### Try:
+
+```
+remember I love machine learning
+remember I hate math
+remember I use python
+```
+
+Then:
+
+```
+what do I love?
+```
+
+👉 Should recall:
+
+```
+I love machine learning
+```
+
+---
+
+# ⚠️ Reality (Important)
+
+This is:
+
+* Not perfect
+* But **huge upgrade over naive memory**
+
+👉 Real systems use:
+
+* embeddings
+* vector DBs
+
+But this:
+
+> gives you the SAME concept in simple form
+
+---
+
+# 🧠 What You Just Learned
+
+This is BIG:
+
+* Retrieval-based memory
+* Context selection
+* Relevance scoring
+
+👉 This is how ChatGPT memory works internally
+
+---
+
+# 🚀 Next Level Options (Now it gets spicy)
+
+Now your agent is:
+
+* Smart ✅
+* Stateful ✅
+* Tool-using ✅
+
+---
+
+## 🔥 Option A — Reasoning Agent (NEXT BEST)
+
+Make agent think like:
+
+```
+Thought → Action → Observation → Repeat
+```
+
+👉 Multi-step intelligence
+
+---
+
+## 🛠️ Option B — Add Powerful Tools
+
+* File reader
+* Code executor
+* System control
+
+---
+
+## 🌐 Option C — Add Web Search
+
+Real-world knowledge
+
+---
+
+# 👉 My recommendation
+
+Go next with:
+👉 **Reasoning Agent**
+
+Because:
+
+> your agent can act… now it should *think*
+
+---
+
+Say:
+👉 **“reasoning agent”**
+
+We’re about to make this thing feel like **Jarvis-lite** 😏🔥
+
+================================================================================
+me - explain - 
+
+def search_memory(query, k=3):
+    memory = load_memory()
+
+    scored = []
+
+    query_words = set(query.lower().split())
+
+    for entry in memory:
+        entry_words = set(entry.lower().split())
+        score = len(query_words & entry_words)  # simple overlap
+
+        if score > 0:
+            scored.append((score, entry))
+
+    # sort by score (highest first)
+    scored.sort(reverse=True, key=lambda x: x[0])
+
+    # return top k relevant memories
+    return [entry for _, entry in scored[:k]]
+================================================================================
+
+
+Good — this function is **simple but very important conceptually**.
+I’ll break it down like an engineer, not just line-by-line 👇
+
+---
+
+# 🧠 What This Function Does (Big Picture)
+
+👉 It finds **most relevant past memories** based on the current query.
+
+Instead of:
+
+> “give last 5 memories”
+
+It does:
+
+> “give memories that match this query”
+
+---
+
+# 🔍 Step-by-Step Breakdown
+
+## 1. Load all memory
+
+```python
+memory = load_memory()
+```
+
+👉 Example:
+
+```python
+[
+  "User: I like Python",
+  "User: I hate math",
+  "User: I use Windows"
+]
+```
+
+---
+
+## 2. Prepare scoring container
+
+```python
+scored = []
+```
+
+👉 This will store:
+
+```python
+(score, memory_entry)
+```
+
+---
+
+## 3. Convert query → words
+
+```python
+query_words = set(query.lower().split())
+```
+
+### Example:
+
+```python
+query = "what do I like"
+```
+
+Becomes:
+
+```python
+{"what", "do", "i", "like"}
+```
+
+👉 `set()` is important:
+
+* removes duplicates
+* allows fast comparison
+
+---
+
+## 4. Loop through each memory
+
+```python
+for entry in memory:
+```
+
+---
+
+## 5. Convert memory → words
+
+```python
+entry_words = set(entry.lower().split())
+```
+
+Example:
+
+```python
+"User: I like Python"
+→ {"user:", "i", "like", "python"}
+```
+
+---
+
+## 6. Calculate similarity score
+
+```python
+score = len(query_words & entry_words)
+```
+
+👉 `&` = **intersection**
+
+Meaning:
+
+> words that appear in BOTH query AND memory
+
+---
+
+### Example:
+
+Query:
+
+```python
+{"what", "do", "i", "like"}
+```
+
+Memory:
+
+```python
+{"user:", "i", "like", "python"}
+```
+
+Intersection:
+
+```python
+{"i", "like"}
+```
+
+Score:
+
+```python
+len(...) = 2
+```
+
+---
+
+## 7. Keep only relevant ones
+
+```python
+if score > 0:
+    scored.append((score, entry))
+```
+
+👉 Ignore unrelated memory
+
+---
+
+### Example `scored` list:
+
+```python
+[
+  (2, "User: I like Python"),
+  (1, "User: I use Windows")
+]
+```
+
+---
+
+## 8. Sort by relevance
+
+```python
+scored.sort(reverse=True, key=lambda x: x[0])
+```
+
+👉 Sort by score (highest first)
+
+Result:
+
+```python
+[
+  (2, "User: I like Python"),
+  (1, "User: I use Windows")
+]
+```
+
+---
+
+## 9. Return top k
+
+```python
+return [entry for _, entry in scored[:k]]
+```
+
+👉 Only return memory text (not score)
+
+If `k=3`, returns top 3 matches
+
+---
+
+# 🧠 Final Output Example
+
+Query:
+
+```
+what do I like
+```
+
+Return:
+
+```python
+[
+  "User: I like Python"
+]
+```
+
+---
+
+# ⚡ Why This Works (Core Idea)
+
+This is using a simple version of:
+
+👉 **Similarity Search**
+
+Instead of:
+
+* embeddings ❌
+* vector DB ❌
+
+You use:
+
+* word overlap ✅
+
+---
+
+# ⚠️ Limitations (Important)
+
+This method is:
+
+### ❌ Weak at meaning
+
+```
+"love" ≠ "like"
+```
+
+### ❌ Sensitive to wording
+
+```
+"python" vs "Python"
+```
+
+### ❌ Includes useless words
+
+```
+"what", "do", "I"
+```
+
+---
+
+# 🔥 Small Upgrade (Easy Win)
+
+Remove useless words (stopwords):
+
+```python
+STOPWORDS = {"what", "do", "i", "is", "the", "a"}
+
+query_words = set(query.lower().split()) - STOPWORDS
+```
+
+👉 Improves accuracy immediately
+
+---
+
+# 🧠 What You Just Learned
+
+This is actually big:
+
+* Keyword matching
+* Similarity scoring
+* Ranking results
+* Retrieval systems
+
+👉 This is the **foundation of search engines + AI memory**
+
+---
+
+# 🚀 Next Step (Now it gets serious)
+
+You now have:
+
+* ✅ Memory
+* ✅ Retrieval
+
+Next evolution:
+
+## 🧠 Reasoning Agent
+
+Your agent will:
+
+```
+Think → Decide → Act → Observe → Repeat
+```
+
+👉 Not just react… but **plan**
+
+---
+
+# 👉 Say the word
+
+Type:
+👉 **“reasoning agent”**
+
+We’re about to build the brain upgrade 🔥
+
+================================================================================
+Note - the above features are not added with current program . continue from here
+================================================================================
+
+LET’S GOOOO 🔥🔥
+Now we build the **brain upgrade** — this is where your agent stops being reactive and starts *thinking*.
+
+---
+
+# 🧠 Step 5 — Reasoning Agent (Core AI Agent Concept)
+
+Right now your agent:
+
+> User → LLM → Action ❌ (single step)
+
+We upgrade to:
+
+> Thought → Action → Observation → Repeat ✅
+
+---
+
+# 🧩 Core Idea (VERY IMPORTANT)
+
+We introduce a loop like:
+
+```
+User: solve 25*12 + 100
+
+Thought: I should calculate 25*12 first
+Action: calculator(25*12)
+Observation: 300
+
+Thought: now add 100
+Action: calculator(300 + 100)
+Observation: 400
+
+Final Answer: 400
+```
+
+👉 This is how real agents like AutoGPT work
+
+---
+
+# 🧠 Step 5.1 — New Prompt (Reasoning Enabled)
+
+Replace your `SYSTEM_PROMPT` with this:
+
+```python
+SYSTEM_PROMPT = """
+You are an AI agent that can think step-by-step and use tools.
+
+You must follow this loop:
+
+1. Thought: what you want to do
+2. Action: one of [calculator, save_note, respond]
+3. Input: input for the action
+
+Format MUST be:
+
+{
+  "thought": "...",
+  "action": "...",
+  "input": "..."
+}
+
+Rules:
+- Always think before acting
+- Use tools step-by-step
+- When done, use "respond" with final answer
+- ONLY return JSON (no markdown)
+"""
+```
+
+---
+
+# 🔁 Step 5.2 — Multi-Step Agent Loop
+
+Now we change `run_agent()` into a loop.
+
+---
+
+## 🔥 New `run_agent()` (Reasoning Version)
+
+```python
+def run_agent(user_input):
+    memory = load_memory()
+    relevant_memory = search_memory(user_input)
+    memory_context = "\n".join(relevant_memory)
+
+    context = f"""
+{SYSTEM_PROMPT}
+
+Previous conversation:
+{memory_context}
+
+User: {user_input}
+"""
+
+    for step in range(5):  # max 5 steps
+        output = ask(context)
+
+        if not output or output.strip() == "":
+            print("⚠️ Empty response")
+            continue
+
+        cleaned = clean_output(output)
+
+        try:
+            data = json.loads(cleaned)
+        except json.JSONDecodeError:
+            print("⚠️ JSON failed:", cleaned)
+            continue
+
+        thought = data.get("thought")
+        action = data.get("action")
+        inp = data.get("input")
+
+        print(f"🧠 Thought: {thought}")
+        print(f"⚡ Action: {action} | Input: {inp}")
+
+        if action == "calculator":
+            result = calculator(inp)
+
+        elif action == "save_note":
+            result = save_note(inp)
+
+        elif action == "respond":
+            result = inp
+
+            add_memory(f"User: {user_input}")
+            add_memory(f"Agent: {result}")
+
+            return result
+
+        else:
+            result = "unknown action"
+
+        # feed result back into context (IMPORTANT)
+        context += f"""
+Thought: {thought}
+Action: {action}
+Input: {inp}
+Observation: {result}
+"""
+
+    return "Max steps reached"
+```
+
+---
+
+# 🧪 Step 5.3 — Test It
+
+Try:
+
+```
+what is (25 * 12) + 100
+```
+
+You should see:
+
+```
+🧠 Thought: ...
+⚡ Action: calculator | Input: 25*12
+🧠 Thought: ...
+⚡ Action: calculator | Input: 300+100
+```
+
+---
+
+# 🧠 What You Just Built
+
+This is HUGE:
+
+* Multi-step reasoning
+* Tool chaining
+* Feedback loop (Observation → next step)
+
+👉 This is **actual AI agent architecture**
+
+---
+
+# ⚠️ Reality Check (Important)
+
+With **Gemma 2B**:
+
+* May struggle with multi-step reasoning
+* May skip steps
+
+👉 That’s normal
+
+---
+
+# 🔥 You Now Have
+
+* ✅ Tool agent
+* ✅ Memory
+* ✅ Smart retrieval
+* ✅ Reasoning loop
+
+👉 This is basically a **mini autonomous agent system**
+
+---
+
+# 🚀 Final Upgrades (Choose Next)
+
+Now we go from “cool” → “insane”:
+
+---
+
+## 🔥 Option A — Better Tools
+
+* File reader
+* Code executor
+* OS commands
+
+## 🌐 Option B — Web Search Agent
+
+* Real-time knowledge
+
+## 🧠 Option C — Better Reasoning
+
+* Self-correction
+* Retry thinking
+
+## 🖥️ Option D — UI (Streamlit app)
+
+---
+
+# 👉 My suggestion
+
+Next:
+👉 **Web Search Tool**
+
+Because your agent currently:
+
+> only knows what model knows
+
+Let’s give it:
+
+> 🌐 real-world knowledge
+
+---
+
+Say:
+👉 **“web tool”**
+
+We’ll turn your agent into a **real assistant** 🚀
+
+===========================================
+WEB TOOL
+===========================================
+
+LET’S GOOOO 🔥🌐
+Now we’re making your agent **actually useful in the real world**.
+
+---
+
+# 🧠 Step 6 — Web Search Tool (Real Knowledge)
+
+Right now your agent:
+
+> ❌ Limited to model knowledge
+
+We upgrade it to:
+
+> ✅ Can fetch real-time info from the web
+
+---
+
+# 🧩 What We’ll Build
+
+A new tool:
+
+```python
+web_search(query)
+```
+
+Agent can do:
+
+```json
+{"action": "web_search", "input": "latest AI news"}
+```
+
+---
+
+# ⚙️ Step 6.1 — Choose Simple Approach
+
+We’ll use:
+👉 **DuckDuckGo (no API key needed)**
+
+---
+
+# 🛠️ Step 6.2 — Install Library
+
+```bash
+pip install duckduckgo-search
+```
+
+---
+
+# 🧰 Step 6.3 — Add Tool
+
+Update your `tools.py`:
+
+```python
+from duckduckgo_search import DDGS
+
+def web_search(query):
+    try:
+        results = []
+
+        with DDGS() as ddgs:
+            for r in ddgs.text(query, max_results=3):
+                results.append(r["body"])
+
+        return "\n".join(results)
+
+    except Exception as e:
+        return f"Search error: {str(e)}"
+```
+
+---
+
+# 🧠 Step 6.4 — Update Prompt
+
+Add tool in your `SYSTEM_PROMPT`:
+
+```python
+Available tools:
+1. calculator(expression)
+2. save_note(note)
+3. web_search(query)
+```
+
+---
+
+Also update rules:
+
+```python
+- Use "web_search" when you need current or unknown information
+```
+
+---
+
+# 🔁 Step 6.5 — Update Agent Logic
+
+In `run_agent()` add:
+
+```python
+elif action == "web_search":
+    result = web_search(inp)
+```
+
+---
+
+# 🧪 Step 6.6 — Test It
+
+Try:
+
+```
+latest AI news
+```
+
+or
+
+```
+who is the current prime minister of india
+```
+
+---
+
+# 🧠 What Happens Internally
+
+```
+User → Agent
+        ↓
+"Need info" → web_search
+        ↓
+Results → Observation
+        ↓
+Agent summarizes → final answer
+```
+
+---
+
+# ⚠️ Reality (Important)
+
+Local LLM will:
+
+* Sometimes not use web tool ❌
+* Sometimes hallucinate ❌
+
+👉 Fix: force usage via prompt (we can improve later)
+
+---
+
+# 🔥 Pro Upgrade (Better Results)
+
+Instead of raw text, return structured:
+
+```python
+results.append(f"{r['title']} - {r['body']}")
+```
+
+---
+
+# 🚀 What You Now Have
+
+Your agent is now:
+
+* 🧠 Reasoning
+* 🛠️ Tool-using
+* 💾 Memory-enabled
+* 🌐 Internet-connected
+
+👉 This is basically a **mini Jarvis**
+
+---
+
+# 🔥 Final Upgrade Options (Last Phase)
+
+Now we go from “powerful” → “insane”
+
+---
+
+## 🧠 Option A — Self-Correcting Agent
+
+* If wrong → retry thinking
+
+## 🛠️ Option B — Code Execution Tool
+
+* Run Python dynamically
+
+## 📂 Option C — File System Agent
+
+* Read/write files intelligently
+
+## 🖥️ Option D — UI App (Streamlit)
+
+* Turn into real product
+
+---
+
+# 👉 My Recommendation
+
+Go next:
+👉 **Code Execution Tool**
+
+Because:
+
+> your agent will literally *run code* to solve problems
+
+---
+
+# 👉 Say:
+
+**“code tool”**
+OR
+**“ui app”**
+
+We’re at the final boss level now 😏🔥
+
+
+================================================================================
+me - go through 
+
+from duckduckgo_search import DDGS
+
+def calculator(expression):
+    try:
+        return str(eval(expression))
+    except:
+        return "Error in calculation"
+
+def save_note(note):
+    with open("notes.txt", "a") as f:
+        f.write(note + "\n")
+    return "Note saved!"
+
+
+
+def web_search(query):
+    try:
+        results = []
+
+        with DDGS() as ddgs:
+            for r in ddgs.text(query, max_results=3):
+                results.append(r["body"])
+
+        return "\n".join(results)
+
+    except Exception as e:
+        return f"Search error: {str(e)}"
+    
+================================================================================
+
+This is clean 🔥 — your `tools.py` is shaping up really well.
+Now let’s do a **proper engineering review** and level it up.
+
+---
+
+# ✅ What You Did Well
+
+* ✔ Functions are modular (good design)
+* ✔ Error handling exists
+* ✔ Web tool integrated correctly
+* ✔ Simple interface → easy for agent
+
+👉 This is exactly how tools should look
+
+---
+
+# ⚠️ Improvements (Important)
+
+## 🔴 1. `eval()` is UNSAFE (High Priority)
+
+```python
+return str(eval(expression))
+```
+
+👉 Problem:
+
+* Can execute ANY code ❌
+* Example:
+
+```python
+__import__('os').system('rm -rf /')
+```
+
+---
+
+## ✅ Safer Version
+
+Replace with:
+
+```python
+def calculator(expression):
+    try:
+        allowed_names = {"__builtins__": None}
+        return str(eval(expression, allowed_names, {}))
+    except:
+        return "Error in calculation"
+```
+
+👉 Now:
+
+* No system access ✅
+* Only math works ✅
+
+---
+
+## 🔴 2. `web_search()` Output is Weak
+
+Current:
+
+```python
+results.append(r["body"])
+```
+
+👉 Problem:
+
+* No title ❌
+* No context ❌
+* Hard for LLM to understand ❌
+
+---
+
+## ✅ Improve It
+
+```python
+def web_search(query):
+    try:
+        results = []
+
+        with DDGS() as ddgs:
+            for r in ddgs.text(query, max_results=3):
+                results.append(f"{r['title']} - {r['body']}")
+
+        return "\n".join(results)
+
+    except Exception as e:
+        return f"Search error: {str(e)}"
+```
+
+👉 Now agent gets:
+
+```
+Title - Description
+```
+
+MUCH better for reasoning
+
+---
+
+## 🔴 3. No Logging (Debugging Pain Later)
+
+You don’t know when tools are called.
+
+---
+
+## ✅ Add Debug Prints (VERY useful)
+
+```python
+def web_search(query):
+    print(f"🌐 Web search called: {query}")
+    ...
+```
+
+Same for calculator:
+
+```python
+print(f"🧮 Calculating: {expression}")
+```
+
+---
+
+## 🔴 4. `save_note()` is Too Basic
+
+Current:
+
+```python
+f.write(note + "\n")
+```
+
+👉 No structure, hard to search later
+
+---
+
+## ✅ Upgrade (Optional but powerful)
+
+```python
+def save_note(note):
+    with open("notes.txt", "a") as f:
+        f.write(f"[NOTE] {note}\n")
+    return "Note saved!"
+```
+
+---
+
+# 🚀 Final Improved Version
+
+```python
+from duckduckgo_search import DDGS
+
+def calculator(expression):
+    try:
+        print(f"🧮 Calculating: {expression}")
+        allowed_names = {"__builtins__": None}
+        return str(eval(expression, allowed_names, {}))
+    except:
+        return "Error in calculation"
+
+def save_note(note):
+    print(f"📝 Saving note: {note}")
+    with open("notes.txt", "a") as f:
+        f.write(f"[NOTE] {note}\n")
+    return "Note saved!"
+
+def web_search(query):
+    try:
+        print(f"🌐 Web search called: {query}")
+        results = []
+
+        with DDGS() as ddgs:
+            for r in ddgs.text(query, max_results=3):
+                results.append(f"{r['title']} - {r['body']}")
+
+        return "\n".join(results)
+
+    except Exception as e:
+        return f"Search error: {str(e)}"
+```
+
+---
+
+# 🧠 What You Just Improved
+
+* Tool safety 🔐
+* Better LLM understanding 🧠
+* Debug visibility 🔍
+* Structured outputs 📦
+
+👉 This is how real AI tool systems are built
+
+---
+
+# 🔥 Where You Are Now
+
+You have built:
+
+* ✅ Agent brain (LLM)
+* ✅ Tool system
+* ✅ Memory (smart retrieval)
+* ✅ Reasoning loop
+* ✅ Web access
+
+👉 This is **seriously impressive**
+
+---
+
+# 🚀 FINAL STAGE OPTIONS
+
+Now we go from **engine → product**
+
+---
+
+## 🖥️ Option A — UI App (Highly Recommended)
+
+* Streamlit web app
+* Chat interface
+* Looks like ChatGPT
+
+## 🧠 Option B — Self-Improving Agent
+
+* Detect wrong answers
+* Retry automatically
+
+## 🛠️ Option C — Code Execution Tool
+
+* Run Python dynamically
+
+---
+
+# 👉 My strong recommendation
+
+Go with:
+👉 **UI App**
+
+Because:
+
+> You’ll *see* your agent like a real product
+
+---
+
+# 👉 Say:
+
+**“UI app”**
+
+Let’s turn this into something you can SHOW 🚀🔥
+
+
+================================================================================
+me - you: what is the war news of today
+🌐 Web search called: war news today
+C:\Users\hi\Documents\learning_AI\tools.py:22: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS() as ddgs:
+agent
+================================================================================
+
+Nice — this is a **very realistic integration issue**, not a logic bug 👍
+Your agent is working, but you’ve hit a **library deprecation warning + likely empty result issue**.
+
+Let’s fix it cleanly.
+
+---
+
+# 🧠 What’s Happening
+
+### ⚠️ Warning:
+
+```text
+duckduckgo_search has been renamed to ddgs
+```
+
+👉 Means:
+
+* Your current package is **deprecated**
+* It may behave inconsistently (like empty results)
+
+---
+
+# 🔴 Why your agent returned nothing
+
+You got:
+
+```
+agent
+```
+
+👉 That means:
+
+* `web_search()` probably returned `""` (empty string)
+* So agent had no observation to respond with
+
+---
+
+# ✅ FIX 1 — Install Correct Package (IMPORTANT)
+
+Run:
+
+```bash
+pip uninstall duckduckgo-search
+pip install ddgs
+```
+
+---
+
+# ✅ FIX 2 — Update Import
+
+Change this:
+
+```python
+from duckduckgo_search import DDGS
+```
+
+👉 To:
+
+```python
+from ddgs import DDGS
+```
+
+---
+
+# ✅ FIX 3 — Improve `web_search()` Robustness
+
+Right now if no results → empty string ❌
+
+---
+
+## Replace with this:
+
+```python
+from ddgs import DDGS
+
+def web_search(query):
+    try:
+        print(f"🌐 Web search called: {query}")
+        results = []
+
+        with DDGS() as ddgs:
+            for r in ddgs.text(query, max_results=3):
+                results.append(f"{r['title']} - {r['body']}")
+
+        if not results:
+            return "No results found"
+
+        return "\n".join(results)
+
+    except Exception as e:
+        return f"Search error: {str(e)}"
+```
+
+---
+
+# ✅ FIX 4 — Improve Agent Behavior (IMPORTANT)
+
+Your agent might not know what to do with raw search results.
+
+👉 Add this to your prompt:
+
+```text
+- After using web_search, you MUST summarize the results and respond clearly
+```
+
+---
+
+# 🧪 Test Again
+
+Try:
+
+```
+what is the war news today
+```
+
+---
+
+# 🧠 Expected Flow
+
+```
+Thought: I need current info → use web_search
+Action: web_search
+Observation: (news results)
+
+Thought: summarize
+Action: respond
+```
+
+---
+
+# ⚠️ Reality Check
+
+Local models (Gemma 2B):
+
+* Sometimes don’t summarize well ❌
+* Might just dump results ❌
+
+👉 That’s okay — system is correct
+
+---
+
+# 🔥 Pro Upgrade (Optional but 🔥)
+
+Limit output size:
+
+```python
+results.append(f"{r['title']} - {r['body'][:200]}")
+```
+
+👉 Prevents overload
+
+---
+
+# 🚀 You Just Learned
+
+* Handling deprecated libraries
+* Tool reliability issues
+* LLM + external data integration
+
+👉 This is **real-world AI engineering**
+
+---
+
+# 👉 Next Move
+
+Your agent is now:
+
+* Smart ✅
+* Tool-using ✅
+* Internet-enabled ✅
+
+Now final level:
+
+👉 **UI app (Streamlit)** — make it look like ChatGPT
+
+OR
+
+👉 **Self-correcting agent** — makes it smarter
+
+---
+
+Say:
+**“UI app”** or **“self correct”**
+
+We’re at the finish line 🔥

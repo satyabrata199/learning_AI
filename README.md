@@ -3979,3 +3979,1179 @@ Say:
 **“UI app”** or **“self correct”**
 
 We’re at the finish line 🔥
+
+
+LETS GOOOO 🔥🔥
+This is the most important concept in modern AI systems right now.
+
+🧠 What is RAG (Simple Explanation)
+
+👉 RAG = Retrieval-Augmented Generation
+
+Break it down:
+
+Retrieval → find relevant data
+Augmented → add it to prompt
+Generation → LLM answers using it
+🧩 Core Idea
+
+Instead of:
+
+LLM answers from its brain ❌
+
+We do:
+
+User → Search data → Give to LLM → Answer ✅
+🧠 Visual Flow
+User Question
+     ↓
+Retrieve Relevant Docs
+     ↓
+Add to Prompt
+     ↓
+LLM Generates Answer
+🧠 Why RAG is IMPORTANT
+
+LLMs:
+
+❌ Forget things
+❌ Hallucinate
+❌ Don’t know your data
+
+RAG fixes:
+
+✅ Uses YOUR data
+✅ More accurate
+✅ Up-to-date info
+🔥 Real-World Uses
+Chat with PDFs 📄
+Company knowledge bots 🏢
+Study assistant 📚
+Coding docs assistant 💻
+🧠 Step-by-Step What We’ll Build
+
+We’ll upgrade your agent:
+
+User → Search memory/docs → Send to LLM → Better answer
+⚙️ Step 1 — Install Needed Tools
+pip install sentence-transformers faiss-cpu
+🧠 Step 2 — What are Embeddings?
+
+👉 Convert text → numbers (vectors)
+
+Example:
+
+"I love Python" → [0.21, -0.55, 0.91, ...]
+
+👉 Similar meaning → similar vectors
+
+🛠️ Step 3 — Create Embedding System
+
+Create file: rag.py
+
+🔹 Load Model
+from sentence_transformers import SentenceTransformer
+import faiss
+import numpy as np
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+🔹 Store Data
+documents = [
+    "Python is a programming language",
+    "AI agents can use tools",
+    "RAG improves LLM accuracy"
+]
+
+embeddings = model.encode(documents)
+🔹 Create Vector Index
+dimension = embeddings.shape[1]
+
+index = faiss.IndexFlatL2(dimension)
+index.add(np.array(embeddings))
+🔍 Step 4 — Search Function
+def retrieve(query, k=2):
+    query_embedding = model.encode([query])
+
+    distances, indices = index.search(query_embedding, k)
+
+    results = [documents[i] for i in indices[0]]
+    return results
+🧪 Step 5 — Test Retrieval
+print(retrieve("what is python"))
+
+👉 Should return:
+
+"Python is a programming language"
+🔧 Step 6 — Connect to Your Agent
+
+Update your run_agent():
+
+Instead of:
+
+memory_context = ...
+
+Use:
+
+retrieved_docs = retrieve(user_input)
+context = "\n".join(retrieved_docs)
+Update prompt:
+full_prompt = f"""
+{SYSTEM_PROMPT}
+
+Relevant information:
+{context}
+
+User: {user_input}
+Output:
+"""
+🧠 What You Just Built
+
+You now have:
+
+✅ Embeddings
+✅ Vector search (FAISS)
+✅ RAG pipeline
+
+👉 This is used in:
+
+ChatGPT plugins
+Enterprise AI systems
+Most AI startups
+⚠️ Important Reality
+
+This is basic RAG
+
+Later improvements:
+
+Chunking large docs
+Better ranking
+Hybrid search
+🚀 Where You Are Now
+
+You’ve reached:
+
+Agent Builder → RAG Engineer 🔥
+🔥 Next Level Options
+
+Now things get serious:
+
+🧠 Option A — RAG + Your Data
+Load PDFs / notes
+Build personal knowledge base
+⚡ Option B — Hybrid Agent
+Agent decides:
+use tools
+OR use RAG
+🖥️ Option C — UI + RAG App
+Chat with your documents
+👉 My Recommendation
+
+Go next:
+👉 RAG + your own data
+
+Because:
+
+that’s when it becomes REAL useful
+
+👉 Say:
+
+“use my data”
+
+We’ll make your agent:
+👉 read files + answer from them 🚀
+
+from sentence_transformers import SentenceTransformer
+import faiss
+import numpy as np
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+documents = [
+    "Python is a programming language",
+    "AI agents can use tools",
+    "RAG improves LLM accuracy"
+]
+
+embeddings = model.encode(documents)
+
+dimension = embeddings.shape[1]
+
+index = faiss.IndexFlatL2(dimension)
+index.add(np.array(embeddings))
+
+def retrieve(query, k=2):
+    query_embedding = model.encode([query])
+
+    distances, indices = index.search(query_embedding, k)
+
+    results = [documents[i] for i in indices[0]]
+    return results
+
+This is clean and correct basic RAG code 🔥
+You’ve successfully built your first vector search system.
+
+Now let’s do a proper engineering review + upgrades so you actually understand it deeply 👇
+
+✅ What You Did Right
+✔ Embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+👉 Good choice:
+
+Fast ⚡
+Lightweight 🧠
+Works on your machine ✅
+✔ Vector creation
+embeddings = model.encode(documents)
+
+👉 Converts text → vectors (core of RAG)
+
+✔ FAISS index
+index = faiss.IndexFlatL2(dimension)
+
+👉 You’re using:
+
+L2 distance (Euclidean)
+Simple & correct for beginners
+✔ Retrieval function
+index.search(query_embedding, k)
+
+👉 This is the heart of RAG
+
+🧠 What This Code is Actually Doing (Concept)
+
+You built:
+
+Text → Vector → Store → Compare → Retrieve
+🔍 Step-by-Step Internals
+1. Convert documents → vectors
+"Python is a programming language"
+→ [0.12, -0.44, 0.98, ...]
+2. Store vectors in FAISS
+[vector1, vector2, vector3]
+3. Query → vector
+"what is python"
+→ [0.10, -0.40, 0.95, ...]
+4. Compare distances
+
+FAISS finds:
+
+closest vectors = most similar meaning
+5. Return matching documents
+⚠️ Issues / Improvements (IMPORTANT)
+🔴 1. No Normalization (Better Accuracy Needed)
+
+Right now:
+
+L2 distance depends on vector magnitude ❌
+✅ Fix (VERY IMPORTANT)
+
+Normalize embeddings:
+
+embeddings = model.encode(documents, normalize_embeddings=True)
+
+AND:
+
+query_embedding = model.encode([query], normalize_embeddings=True)
+
+👉 This makes similarity much better
+
+🔴 2. No Persistence (Data lost on restart)
+
+Right now:
+
+Every run → rebuild index ❌
+✅ Fix (Save index)
+faiss.write_index(index, "index.faiss")
+
+Load later:
+
+index = faiss.read_index("index.faiss")
+🔴 3. Documents Not Stored Properly
+
+You rely on:
+
+documents[i]
+
+👉 If order breaks → system breaks ❌
+
+✅ Better Design
+
+Store mapping:
+
+doc_store = {i: doc for i, doc in enumerate(documents)}
+
+Then:
+
+results = [doc_store[i] for i in indices[0]]
+🔴 4. No Score Awareness
+
+You ignore:
+
+distances
+
+👉 Important for filtering
+
+✅ Improve
+results = []
+for i, dist in zip(indices[0], distances[0]):
+    results.append((documents[i], dist))
+
+return results
+🚀 Improved Version (Use This)
+from sentence_transformers import SentenceTransformer
+import faiss
+import numpy as np
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+documents = [
+    "Python is a programming language",
+    "AI agents can use tools",
+    "RAG improves LLM accuracy"
+]
+
+# ✅ Normalize embeddings
+embeddings = model.encode(documents, normalize_embeddings=True)
+
+dimension = embeddings.shape[1]
+
+index = faiss.IndexFlatL2(dimension)
+index.add(np.array(embeddings))
+
+def retrieve(query, k=2):
+    query_embedding = model.encode([query], normalize_embeddings=True)
+
+    distances, indices = index.search(query_embedding, k)
+
+    results = []
+    for i, dist in zip(indices[0], distances[0]):
+        results.append((documents[i], dist))
+
+    return results
+🧪 Example Output
+retrieve("what is python")
+
+👉 Output:
+
+[
+  ("Python is a programming language", 0.12),
+  ("AI agents can use tools", 0.89)
+]
+🧠 What You Just Learned (Deep Level)
+
+You now understand:
+
+Embeddings (semantic meaning)
+Vector similarity
+FAISS indexing
+Retrieval ranking
+
+👉 This is core of modern AI systems
+
+🔥 Next Step (VERY IMPORTANT)
+
+Right now:
+
+You retrieve documents
+
+But NOT yet:
+
+Use them to improve answers
+
+🚀 NEXT UPGRADE
+
+👉 Connect RAG → your agent
+
+So flow becomes:
+
+User → Retrieve docs → Inject into prompt → LLM answers
+👉 Say:
+
+“connect rag”
+
+We’ll integrate this into your agent
+and make it actually smarter 🔥
+
+connect rag
+
+LET’S GO 🔥 — this is the final glue step
+Now we connect your RAG system → your agent brain
+
+🧠 What We’re Doing
+
+Right now you have:
+
+✅ Agent (reasoning + tools)
+✅ RAG (retrieval system)
+
+👉 But they are separate ❌
+
+🎯 Goal
+
+Merge into:
+
+User → Retrieve relevant info → Give to LLM → Better answer
+🏗️ Final Architecture (Important)
+User Input
+   ↓
+RAG (retrieve docs)
+   ↓
+Agent (LLM)
+   ↓
+Tools (if needed)
+   ↓
+Final Answer
+⚙️ Step 1 — Import RAG
+
+In your main file:
+
+from rag import retrieve
+🧠 Step 2 — Use RAG in Agent
+
+Update your run_agent() 👇
+
+🔥 Replace memory-only context with RAG + memory
+relevant_memory = search_memory(user_input)
+retrieved_docs = retrieve(user_input)
+
+memory_context = "\n".join(relevant_memory)
+
+# if you used (doc, score)
+rag_context = "\n".join([doc for doc, _ in retrieved_docs])
+🧠 Step 3 — Inject into Prompt
+
+Update prompt:
+
+full_prompt = f"""{SYSTEM_PROMPT}
+
+Relevant information:
+{rag_context}
+
+Previous conversation:
+{memory_context}
+
+User: {user_input}
+Output:
+"""
+🧠 Step 4 — Update Prompt Instructions
+
+VERY IMPORTANT — tell model how to use RAG
+
+Add this in SYSTEM_PROMPT:
+
+- If relevant information is provided, use it to answer
+- Prefer retrieved information over guessing
+🔁 Step 5 — Keep Rest SAME
+
+Your reasoning loop stays:
+
+Thought → Action → Observation
+
+👉 RAG just improves input
+
+🧪 Step 6 — Test It
+Example:
+documents = [
+    "Python is used for AI and web development",
+    "RAG helps reduce hallucination",
+    "AI agents can use tools to act"
+]
+Try:
+what is python used for
+
+👉 Expected:
+
+Agent uses retrieved doc
+Gives better answer
+🧠 What’s Happening Internally
+User: what is python used for
+
+↓
+RAG finds:
+"Python is used for AI and web development"
+
+↓
+LLM sees this in prompt
+
+↓
+Answer becomes accurate
+⚠️ Important Reality
+
+Local model (Gemma 2B):
+
+Might ignore RAG sometimes ❌
+Might still hallucinate ❌
+
+👉 That’s okay — architecture is correct
+
+🔥 Pro Upgrade (Very Powerful)
+
+Limit RAG size:
+
+rag_context = "\n".join([doc for doc, _ in retrieved_docs][:2])
+
+👉 Prevents overload
+
+🧠 What You Just Built (BIG)
+
+You now have:
+
+🧠 Reasoning agent
+🛠️ Tool usage
+💾 Memory
+🌐 Web access
+📚 RAG system
+
+👉 This is basically:
+
+a mini AI assistant system like ChatGPT + plugins
+
+📊 Your Level Now
+Intermediate ❌
+→ Advanced AI System Builder ✅🔥
+🚀 FINAL STAGE OPTIONS
+
+Now you’re at the top of this stack.
+
+🖥️ Option A — Build UI (HIGHLY RECOMMENDED)
+
+Turn this into:
+👉 ChatGPT-style app
+
+🧠 Option B — Advanced RAG
+PDF loader
+Chunking
+Better retrieval
+⚙️ Option C — Autonomous Agent
+Task planning
+Multi-step execution
+👉 My STRONG recommendation
+
+Go next:
+👉 UI app
+
+Because:
+
+you need to SEE what you built
+
+👉 Say:
+
+“build UI”
+
+We’ll turn your system into a real app in ~30 mins 🚀🔥
+
+where is relevant_memory = search_memory(user_input) this function
+
+Good catch — this is exactly the kind of question that shows you’re thinking like an engineer 👇
+
+🧠 Where does this come from?
+relevant_memory = search_memory(user_input)
+
+👉 This is from your earlier memory system (Phase 4 — Smart Memory)
+
+🔍 It should be in your memory.py
+
+You created it earlier as:
+
+def search_memory(query, k=3):
+    memory = load_memory()
+
+    scored = []
+
+    query_words = set(query.lower().split())
+
+    for entry in memory:
+        entry_words = set(entry.lower().split())
+        score = len(query_words & entry_words)
+
+        if score > 0:
+            scored.append((score, entry))
+
+    scored.sort(reverse=True, key=lambda x: x[0])
+
+    return [entry for _, entry in scored[:k]]
+🧠 What it does (quick recap)
+User query → find matching past memories → return relevant ones
+⚠️ If You DON’T Have It
+
+Then just add this in memory.py
+
+Also make sure you have:
+
+def load_memory():
+    ...
+⚙️ And Import It Properly
+
+In your main file:
+
+from memory import search_memory
+🧠 How It Fits Now (IMPORTANT)
+
+You now have 2 types of context:
+
+💾 Memory (Personal history)
+relevant_memory = search_memory(user_input)
+
+👉 Example:
+
+User: I like Python
+📚 RAG (Knowledge base)
+retrieved_docs = retrieve(user_input)
+
+👉 Example:
+
+Python is used for AI
+🧩 Combined Context
+Relevant information (RAG)
++ 
+Previous conversation (Memory)
+
+👉 This is very powerful combo
+
+🔥 If You Want Simpler (Optional)
+
+If you feel this is too much, you can temporarily remove memory:
+
+memory_context = ""
+
+👉 Focus only on RAG first
+
+🚀 Clean Mental Model
+
+Think like this:
+
+Memory = "What YOU said before"
+RAG    = "What SYSTEM knows"
+👉 Final Check
+
+Make sure you have:
+
+✅ search_memory() in memory.py
+✅ retrieve() in rag.py
+✅ Both imported in main
+🧠 You’re Now Combining
+Personal memory 🧍
+External knowledge 📚
+Tools 🛠️
+Reasoning 🧠
+
+👉 This is real AI system design
+
+👉 Next Step
+
+Now everything is connected.
+
+Say:
+👉 “build UI”
+
+Let’s turn this into something you can actually use like ChatGPT 🔥
+
+import json 
+import os
+
+MEMORY_FILE = "memory.json"
+
+def load_memory():
+    if not os.path.exists(MEMORY_FILE):
+        return []
+    try:
+        with open(MEMORY_FILE, "r") as f:
+            content = f.read().strip()
+
+            if not content:  # ✅ empty file
+                return []
+
+            return json.loads(content)
+
+    except json.JSONDecodeError:
+        print("⚠️ Memory file corrupted, resetting...")
+        return []
+
+    
+def save_memory(data):
+    with open(MEMORY_FILE,"w") as f:
+        json.dump(data , f, indent = 2)
+
+def add_memory(entry):
+    memory = load_memory()
+    memory.append(entry)
+    save_memory(memory)
+
+Nice — your memory.py is solid and production-safe now 🔥
+You’ve handled file errors, empty files, corruption — that’s real engineering.
+
+Now let’s complete it by adding the missing piece 👉 search_memory()
+
+🧠 What You’re Missing
+
+Right now you have:
+
+✅ load_memory
+✅ save_memory
+✅ add_memory
+
+But NOT:
+
+search_memory()  ❌
+
+👉 That’s why your main code was confusing
+
+✅ Add This Function
+
+Paste this at the bottom of your file 👇
+
+def search_memory(query, k=3):
+    memory = load_memory()
+
+    if not memory:
+        return []
+
+    scored = []
+
+    query_words = set(query.lower().split())
+
+    for entry in memory:
+        entry_words = set(entry.lower().split())
+        score = len(query_words & entry_words)
+
+        if score > 0:
+            scored.append((score, entry))
+
+    # sort by relevance
+    scored.sort(reverse=True, key=lambda x: x[0])
+
+    return [entry for _, entry in scored[:k]]
+🧠 What This Adds
+
+Now your memory system becomes:
+
+Store → Retrieve → Use
+
+Instead of:
+
+Store → blindly read ❌
+🔍 Example
+Memory:
+[
+  "User: I like Python",
+  "User: I use Windows",
+  "User: I am learning AI"
+]
+Query:
+what do I like
+Output:
+["User: I like Python"]
+⚠️ Small Upgrade (Recommended)
+
+Remove useless words (improves accuracy):
+
+STOPWORDS = {"what", "do", "i", "is", "the", "a"}
+
+query_words = set(query.lower().split()) - STOPWORDS
+🚀 Your Final memory.py (Complete)
+import json 
+import os
+
+MEMORY_FILE = "memory.json"
+
+def load_memory():
+    if not os.path.exists(MEMORY_FILE):
+        return []
+    try:
+        with open(MEMORY_FILE, "r") as f:
+            content = f.read().strip()
+
+            if not content:
+                return []
+
+            return json.loads(content)
+
+    except json.JSONDecodeError:
+        print("⚠️ Memory file corrupted, resetting...")
+        return []
+
+def save_memory(data):
+    with open(MEMORY_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+def add_memory(entry):
+    memory = load_memory()
+    memory.append(entry)
+    save_memory(memory)
+
+def search_memory(query, k=3):
+    memory = load_memory()
+
+    if not memory:
+        return []
+
+    STOPWORDS = {"what", "do", "i", "is", "the", "a"}
+
+    query_words = set(query.lower().split()) - STOPWORDS
+
+    scored = []
+
+    for entry in memory:
+        entry_words = set(entry.lower().split())
+        score = len(query_words & entry_words)
+
+        if score > 0:
+            scored.append((score, entry))
+
+    scored.sort(reverse=True, key=lambda x: x[0])
+
+    return [entry for _, entry in scored[:k]]
+🧠 Now Everything is Connected
+
+You now have:
+
+💾 Memory storage
+🔍 Memory retrieval
+📚 RAG retrieval
+🧠 Reasoning
+🛠️ Tools
+
+👉 This is a complete AI system
+
+🚀 Next Move
+
+Now don’t stop here — THIS is the moment to level it up visually.
+
+👉 Say:
+“build UI”
+
+Let’s turn this into a real ChatGPT-style app 🔥
+
+RAG is not working there 
+
+Alright — don’t worry, this is the most common point where RAG “seems” broken.
+Let’s debug it properly like an engineer 🔍
+
+🧠 First — What does “not working” mean?
+
+Usually one of these:
+
+❌ retrieve() returns empty / wrong docs
+❌ RAG not added to prompt
+❌ LLM ignores RAG context
+❌ Data too weak / small
+
+We’ll check ALL step-by-step 👇
+
+✅ STEP 1 — Test RAG in Isolation (VERY IMPORTANT)
+
+Run this separately:
+
+print(retrieve("what is python"))
+👉 Expected Output
+[
+  ("Python is a programming language", 0.1),
+  ...
+]
+❌ If NOT working
+
+Tell me output — but likely causes:
+
+🔴 Issue A — No normalization
+
+Fix:
+
+model.encode(documents, normalize_embeddings=True)
+🔴 Issue B — Query mismatch
+
+Your docs:
+
+"Python is a programming language"
+
+Query:
+
+"python usage"
+
+👉 small model → weak match
+
+✅ STEP 2 — Check RAG inside Agent
+
+Add debug print:
+
+print("📚 RAG:", rag_context)
+👉 If this prints empty:
+
+👉 Problem = retrieval
+
+👉 If this prints correct docs:
+
+👉 Problem = LLM ignoring it
+
+✅ STEP 3 — Most Likely Problem (IMPORTANT)
+
+👉 Your model Gemma 2B is too weak
+
+It often:
+
+Ignores context ❌
+Doesn’t use RAG properly ❌
+✅ FIX — Force Model to Use RAG
+
+Update your prompt like this 👇
+
+🔥 Strong Prompt Upgrade
+SYSTEM_PROMPT = """
+You are an AI assistant.
+
+You are given RELEVANT INFORMATION.
+You MUST use this information to answer.
+
+RULES:
+- If relevant information is provided, you MUST base your answer on it
+- Do NOT ignore the provided information
+- Do NOT make up answers if info is available
+
+Return JSON only:
+{
+  "action": "respond",
+  "input": "your answer"
+}
+"""
+✅ STEP 4 — Make RAG More Visible
+
+Instead of:
+
+Relevant information:
+{rag_context}
+🔥 Do THIS:
+full_prompt = f"""
+{SYSTEM_PROMPT}
+
+===== IMPORTANT CONTEXT =====
+{rag_context}
+=============================
+
+User: {user_input}
+Output:
+"""
+
+👉 Makes model pay attention
+
+✅ STEP 5 — Improve Documents (VERY IMPORTANT)
+
+Your current docs:
+
+[
+ "Python is a programming language",
+ "AI agents can use tools",
+ "RAG improves LLM accuracy"
+]
+
+👉 Too small + generic ❌
+
+🔥 Better Docs
+documents = [
+    "Python is widely used for AI, machine learning, and web development",
+    "AI agents use tools like calculators and APIs to perform tasks",
+    "RAG helps reduce hallucinations by providing external knowledge to LLMs"
+]
+✅ STEP 6 — Quick Debug Checklist
+
+✔ Run this:
+
+print(retrieve("python"))
+
+✔ Then in agent:
+
+print("📚 RAG:", rag_context)
+
+✔ Then check:
+
+Is RAG non-empty?
+Is it inside prompt?
+Is model using it?
+🧠 Reality Check (VERY IMPORTANT)
+
+Even if everything is correct:
+
+👉 Small models (Gemma 2B):
+
+Don’t follow instructions well ❌
+Weak reasoning ❌
+🔥 If You Want It to WORK PROPERLY
+
+Use slightly better model:
+
+ollama run llama3
+
+or
+
+ollama run mistral
+🚀 Summary
+
+RAG “not working” = usually:
+
+Retrieval ❌ OR Prompt ❌ OR Model limitation ❌
+👉 What I Need From You
+
+Send me:
+
+👉 Output of:
+
+print(retrieve("python"))
+
+👉 And:
+
+print("📚 RAG:", rag_context)
+
+I’ll pinpoint the exact issue in 1 step ⚡
+
+main.py
+Python
+memory.py
+Python
+rag.py
+Python
+go through it and tell me what is the problem here why RAG is now working and agent is not working properly
+
+Alright — I went through your code line-by-line.
+Good news: your system is 90% correct.
+Bad news: there are 2 critical bugs + 1 design mistake breaking RAG.
+
+Let’s fix it precisely 👇
+
+🔴 PROBLEM 1 — RAG IS NOT USED AT ALL (MAIN ISSUE)
+
+In your main.py:
+
+retrieved_docs = retrieve(user_input)
+
+✅ You retrieved docs
+
+BUT ❌ you NEVER used them in the prompt
+
+❌ Your current prompt
+full_prompt = f"{SYSTEM_PROMPT}\n previous context: {memory_context}\nUser: {user_input}\nOutput:"
+
+👉 RAG is completely ignored
+
+✅ FIX (MOST IMPORTANT)
+
+Replace with:
+
+rag_context = "\n".join([doc for doc, _ in retrieved_docs])
+
+full_prompt = f"""{SYSTEM_PROMPT}
+
+===== IMPORTANT CONTEXT =====
+{rag_context}
+=============================
+
+Previous conversation:
+{memory_context}
+
+User: {user_input}
+Output:
+"""
+🔴 PROBLEM 2 — BUG IN rag.py (VERY IMPORTANT)
+
+In your documents:
+
+documents = [
+    "Python is a programming language",
+    "AI agents can use tools",
+    "RAG improves LLM accuracy"
+    "my name is satya"
+]
+
+👉 ❌ MISSING COMMA
+
+❌ What Python does
+"RAG improves LLM accuracy" "my name is satya"
+
+👉 becomes:
+
+"RAG improves LLM accuracymy name is satya"
+✅ FIX
+documents = [
+    "Python is a programming language",
+    "AI agents can use tools",
+    "RAG improves LLM accuracy",
+    "my name is satya"
+]
+🔴 PROBLEM 3 — WEAK PROMPT (MODEL IGNORING RAG)
+
+Your prompt says:
+
+- Prefer retrieved information over guessing
+
+👉 Too weak ❌
+
+✅ STRONG FIX
+
+Replace this part in SYSTEM_PROMPT:
+
+- If relevant information is provided, use it to answer
+- Prefer retrieved information over guessing
+WITH:
+- You are given IMPORTANT CONTEXT
+- You MUST use this context to answer
+- Do NOT ignore the context
+- Do NOT make up answers if context is available
+⚠️ PROBLEM 4 — SMALL MODEL LIMITATION
+
+You’re using:
+
+"gemma2:2b"
+
+👉 Reality:
+
+Weak instruction following ❌
+Weak RAG usage ❌
+✅ OPTIONAL FIX (BIG IMPACT)
+
+Try:
+
+ollama run mistral
+
+or
+
+ollama run llama3
+🔍 DEBUG (DO THIS NOW)
+
+Add this:
+
+print("📚 RAG:", rag_context)
+
+👉 Check:
+
+Is it empty?
+Is it correct?
+🧠 FINAL FIXED FLOW
+
+After fixes:
+
+User → retrieve() → inject into prompt → LLM → better answer
+✅ SUMMARY (YOUR EXACT ISSUES)
+Issue	Problem	Fix
+❌ RAG not used	Not in prompt	Add rag_context
+❌ Bug in documents	Missing comma	Fix list
+❌ Weak prompt	Model ignores RAG	Strengthen rules
+⚠️ Model weak	Gemma 2B	Use mistral/llama3
+🚀 AFTER FIX
+
+Your system becomes:
+
+🧠 Agent
+📚 RAG
+💾 Memory
+🌐 Tools
+
+👉 This is real AI architecture
+
+👉 Next Step
+
+Fix these and run again.
+
+Then tell me:
+
+👉 “done”
+
+Next we’ll:
+👉 build UI (turn this into ChatGPT app) 🔥

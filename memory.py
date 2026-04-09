@@ -28,4 +28,25 @@ def add_memory(entry):
     memory = load_memory()
     memory.append(entry)
     save_memory(memory)
+    
+def search_memory(query, k=3):
+    memory = load_memory()
 
+    if not memory:
+        return []
+
+    scored = []
+
+    query_words = set(query.lower().split())
+
+    for entry in memory:
+        entry_words = set(entry.lower().split())
+        score = len(query_words & entry_words)
+
+        if score > 0:
+            scored.append((score, entry))
+
+    # sort by relevance
+    scored.sort(reverse=True, key=lambda x: x[0])
+
+    return [entry for _, entry in scored[:k]]

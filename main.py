@@ -1,7 +1,8 @@
 import requests
 import json
 from tools import calculator , save_note , web_search
-from memory import load_memory , add_memory
+from memory import load_memory , add_memory ,search_memory
+from rag import retrieve
 
 Ollma_url = "http://localhost:11434/api/generate"
 
@@ -23,21 +24,27 @@ STRICT RULES:
 - The JSON must follow EXACTLY this schema:
 
 {
-  "action": "respond OR calculator OR save_note" OR web_search,
+  "action": "respond OR calculator OR save_note OR web_search" ,
   "input": "string"
 }
 
 Action rules:
 - Use "calculator" ONLY for mathematical expressions.
-- Use "save_note" ONLY when the user asks to remember something.
+- Use "save_note" ONLY when the user asks to remember something or save somthing.
 - Use "web_search" when you need current or unknown information.
 - Use "respond" for all other cases.
+- You are given IMPORTANT CONTEXT
+- You MUST use this context to answer
+- Do NOT ignore the context
+- Do NOT make up answers if context is available
+
 
 Input rules:
 - "input" must ALWAYS be a string.
 - For calculator, input must be a valid mathematical expression.
 - For save_note, input must be the exact note to save.
 - For respond, input must be a natural language reply.
+
 
 ERROR HANDLING:
 - If unsure, default to:
@@ -48,7 +55,7 @@ VALIDATION CHECKLIST (before responding):
 - Are all keys present? ("action", "input")
 - Is "action" one of the allowed values?
 - Is "input" a string?
-
+ 
 Examples:
 
 User: what is 2+2
@@ -87,10 +94,16 @@ def clean_output(output):
 
 def run_agent(user_input):
 
-    memory = load_memory()
-    memory_contetxt = "\n".join(memory[-5:])
+    #memory = load_memory()
+    #memory_contetxt = "\n".join(memory[-5:])
 
-    full_prompt = f"{SYSTEM_PROMPT}\n previous context: {memory_contetxt}\nUser: {user_input}\nOutput:"
+    relevant_memory = search_memory(user_input)
+    retrieved_docs = retrieve(user_input)
+
+    rag_context = "\n".join([doc for doc, _ in retrieved_docs])
+    memory_context = "\n".join(relevant_memory)
+
+    full_prompt = f"{SYSTEM_PROMPT}\n {rag_context} previous context: {memory_context}\nUser: {user_input}\nOutput:"
 
     for _ in range(2):
         output = ask(full_prompt)
